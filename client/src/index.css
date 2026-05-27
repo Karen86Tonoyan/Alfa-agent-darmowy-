@@ -1,0 +1,290 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  /* Brutalist Design System - Stark & Industrial */
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --chart-1: oklch(1 0 0);
+  --chart-2: oklch(1 0 0);
+  --chart-3: oklch(1 0 0);
+  --chart-4: oklch(1 0 0);
+  --chart-5: oklch(1 0 0);
+  --radius: 0;
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.05 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --secondary: oklch(0.1 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.8 0 0);
+  --accent: oklch(0.5 0.3 30);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.5 0.3 30);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.15 0 0);
+  --input: oklch(0.1 0 0);
+  --ring: oklch(0.5 0.3 30);
+  --sidebar: oklch(0.05 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.5 0.3 30);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.15 0 0);
+  --sidebar-ring: oklch(0.5 0.3 30);
+}
+
+.dark {
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0 0 0);
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.05 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --secondary: oklch(0.1 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.8 0 0);
+  --accent: oklch(0.5 0.3 30);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.5 0.3 30);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.15 0 0);
+  --input: oklch(0.1 0 0);
+  --ring: oklch(0.5 0.3 30);
+  --chart-1: oklch(1 0 0);
+  --chart-2: oklch(1 0 0);
+  --chart-3: oklch(1 0 0);
+  --chart-4: oklch(1 0 0);
+  --chart-5: oklch(1 0 0);
+  --sidebar: oklch(0.05 0 0);
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.5 0.3 30);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.15 0 0);
+  --sidebar-ring: oklch(0.5 0.3 30);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* Brutalist Typography - Oversized, Condensed, High Contrast */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black tracking-tighter text-white;
+    letter-spacing: -0.03em;
+  }
+
+  h1 {
+    @apply text-6xl md:text-7xl lg:text-8xl;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  h2 {
+    @apply text-5xl md:text-6xl;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  h3 {
+    @apply text-4xl md:text-5xl;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  h4 {
+    @apply text-3xl md:text-4xl;
+    font-weight: 800;
+  }
+
+  p {
+    @apply text-lg md:text-xl;
+    line-height: 1.6;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  /* Brutalist Divider - Full-width red line */
+  .divider-red {
+    @apply w-full h-1;
+    background-color: oklch(0.5 0.3 30);
+    margin: 2rem 0;
+  }
+
+  .divider-red-thick {
+    @apply w-full h-2;
+    background-color: oklch(0.5 0.3 30);
+    margin: 2rem 0;
+  }
+
+  /* Stark centered layout */
+  .brutalist-center {
+    @apply flex flex-col items-center justify-center;
+  }
+
+  /* Industrial card - minimal, stark, no border radius */
+  .card-industrial {
+    @apply bg-card text-card-foreground border border-border p-6;
+    border-width: 1px;
+  }
+
+  /* Oversized, condensed typography */
+  .text-brutalist {
+    @apply text-white font-black tracking-tighter;
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  /* High contrast stark text */
+  .text-stark {
+    @apply text-white;
+    color: oklch(1 0 0);
+  }
+
+  /* Raw, no-nonsense button */
+  .btn-industrial {
+    @apply px-8 py-4 bg-foreground text-background font-black tracking-tight text-lg;
+    border: none;
+    cursor: pointer;
+    transition: all 0.1s ease-out;
+  }
+
+  .btn-industrial:hover {
+    @apply bg-accent text-background;
+    transform: scale(0.98);
+  }
+
+  .btn-industrial:active {
+    transform: scale(0.95);
+  }
+
+  /* Container - centered with responsive padding */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+
+  /* Brutalist Grid Layout */
+  .grid-brutalist {
+    @apply grid gap-0;
+    border: 1px solid oklch(0.15 0 0);
+  }
+
+  .grid-brutalist > * {
+    border-right: 1px solid oklch(0.15 0 0);
+    border-bottom: 1px solid oklch(0.15 0 0);
+    padding: 2rem;
+  }
+
+  .grid-brutalist > *:last-child {
+    border-right: none;
+  }
+
+  /* Raw input styling */
+  input, textarea, select {
+    @apply bg-input text-foreground border border-border px-4 py-2;
+    font-family: 'Inter', monospace;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none border-accent;
+    box-shadow: 0 0 0 2px oklch(0.5 0.3 30 / 0.1);
+  }
+}

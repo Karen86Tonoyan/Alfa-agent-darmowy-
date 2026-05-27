@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1779540363206,
+      "tag": "0000_blushing_mulholland_black",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1779540500144,
+      "tag": "0001_nervous_hex",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1779540853177,
+      "tag": "0002_glossy_rattler",
+      "breakpoints": true
+    }
+  ]
+}
