@@ -103,16 +103,20 @@
 
 ## ALFA Architecture Integration
 
-### Filtry Tonoyana (7-Filter Logic Validation)
-- [x] Kontrargument Filter (F1) - Absolute statement detection
+### Filtry Tonoyana (8-Filter Logic Validation) — audited, fixed & extended (2026)
+- [x] Kontrargument Filter (F1) - Absolute statement detection (stricter: 2+ absolutes without balance → harder fail)
 - [x] Weryfikacja Filter (F2) - Source requirement validation
 - [x] Kontekst Filter (F3) - Context awareness checking
 - [x] Anti-magic Filter (F4) - Concrete mechanism validation
 - [x] Dwuperspektywa Filter (F5) - Balanced perspective checking
 - [x] Backtrack Filter (F6) - Logical reasoning validation
-- [x] Atrybucja Filter (F7) - Attribution error detection
-- [x] TypeScript implementation with scoring system
-- [x] Integration with AI post generation
+- [x] Atrybucja Filter (F7) - Attribution error detection (expanded English patterns)
+- [x] **Hype Filter (F8 NEW)** - Marketing superlatives ("best ever", "guaranteed", "revolutionary") without evidence — tailored for FB acquisition posts
+- [x] Improved overall decision: any HIGH severity or multiple flags → at least WARN even if individual filters pass
+- [x] All 24 tests green (4 were failing before — scoring was too lenient, EN patterns incomplete)
+- [x] Standalone reusable CLI: `pnpm alfa:check -- "text to validate"` (prints report + proper exit codes 0/1/2) — core ALFA now "darmowy" / scriptable outside the full agent
+- [x] alfa-knowledge MCP graph seeded with principles + good/bad examples for persistent cross-agent ALFA memory
+- [x] Integration with AI post generation + message replies (BLOCK → rejected + owner notify; WARN → requiresReview)
 
 ### ALFA Dynamic Pipeline
 - [x] Risk analyzer (user_input, model_output analysis)

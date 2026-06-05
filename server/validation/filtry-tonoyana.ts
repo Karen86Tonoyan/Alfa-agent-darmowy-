@@ -1,7 +1,9 @@
 /**
- * Filtry Tonoyana v1.0 — 7 deterministycznych filtrów anty-halucynacyjnych
- * Ported to TypeScript for Facebook Page Agent
- * 
+ * Filtry Tonoyana v1.1 — 8 deterministycznych filtrów anty-halucynacyjnych (ALFA core)
+ * Ported + extended for Facebook Page Agent + standalone "darmowy" use.
+ *
+ * Now includes F8 Hype (marketing overclaim detector) for customer-acquisition posts.
+ *
  * Podstawy teoretyczne:
  *  F1 Kontrargument  — Popper, zasada falsyfikacji
  *  F2 Weryfikacja    — cross-reference źródeł
@@ -10,6 +12,10 @@
  *  F5 Dwuperspektywa — teoria perspektywy (Kahneman)
  *  F6 Backtrack      — śledzenie logiki rozumowania
  *  F7 Atrybucja      — teoria atrybucji (Heider, Kelley)
+ *  F8 Hype           — niepoparte superlatywy/gwarancje (rozszerzenie 2026)
+ *
+ * Standalone: pnpm alfa:check -- "your text"
+ * Knowledge graph seeding via alfa-knowledge MCP (persistent ALFA memories across agents).
  */
 
 export enum Severity {
@@ -150,9 +156,13 @@ class KontrargumentFilter extends BaseFilter {
 
     const score = Math.max(10, 90 - absoluteCount * 15 + altCount * 8);
     const confidence = Math.max(0.2, 0.9 - absoluteCount * 0.15 + altCount * 0.05);
-    const passed = score >= this.blockThreshold && absoluteCount < 3;
+    // Stricter: multiple absolutes without balancing language should not pass the filter
+    const passed = (score >= this.blockThreshold && absoluteCount < 2) || (absoluteCount >= 2 && altCount >= 2);
     const severity =
-      absoluteCount >= 3 ? Severity.HIGH : absoluteCount >= 1 ? Severity.MEDIUM : Severity.LOW;
+      absoluteCount >= 3 ? Severity.HIGH :
+      absoluteCount >= 2 ? Severity.HIGH :
+      (absoluteCount >= 1 && /definitely|absolutely|100%|never|always|wszystko/i.test(text)) ? Severity.HIGH :
+      absoluteCount >= 1 ? Severity.MEDIUM : Severity.LOW;
 
     return this.createResult(passed, score, confidence, issues, suggestions, htypes, severity, {
       absolute: absoluteCount,
@@ -537,10 +547,12 @@ class AtrybucjaFilter extends BaseFilter {
     /\bbo mu się nie chce\b/i,
     /\bz natury\b/i,
     /\bwrodzony\b/i,
-    /\bbecause he's stupid\b/i,
-    /\bbecause she's lazy\b/i,
+    /\bbecause (he|she|they)('?s| is| was| are| were) (stupid|lazy|dumb|incompetent|smart|talented|genius)\b/i,
+    /\b(he|she|they)('?s| is| was| are| were) (just )?(stupid|lazy|dumb|smart) (by nature|innately)?\b/i,
     /\bby nature\b/i,
     /\binnately\b/i,
+    /\bit'?s who (he|she|they) (is|are)\b/i,
+    /\b(disposition|character|personality) (flaw|defect|issue)\b/i,
   ];
 
   private externalIgnorePatterns = [
@@ -602,6 +614,63 @@ class AtrybucjaFilter extends BaseFilter {
   }
 }
 
+// F8: HYPE / OVERCLAIM — common in marketing/Facebook posts (rozszerzenie ALFA dla użycia w agencie)
+class HypeFilter extends BaseFilter {
+  name = "Hype";
+  description = "Wykrywa niepoparte superlatywy i gwarancje marketingowe";
+
+  private hypePatterns = [
+    /\bbest ever\b/i,
+    /\b#1\b/i,
+    /\bthe best\b/i,
+    /\brevolutionary\b/i,
+    /\bguaranteed\b/i,
+    /\b100% results\b/i,
+    /\btransform your life\b/i,
+    /\binstant success\b/i,
+    /\bultimate\b/i,
+    /\bperfect solution\b/i,
+    /\bnever seen before\b/i,
+    /\bgame changer\b/i,
+    /\bmust have\b/i,
+    /\bjedyny taki\b/i,
+    /\bnajlepszy\b/i,
+    /\bgwarancja\b/i,
+    /\b100% skuteczny\b/i,
+  ];
+
+  private evidencePatterns = [
+    /\b(proven|tested|studied|data shows|according to)\b/i,
+    /\busers? report\b/i,
+    /\bcase study\b/i,
+    /\breviewed\b/i,
+  ];
+
+  analyze(text: string): FilterResult {
+    const issues: string[] = [];
+    const suggestions: string[] = [];
+    const htypes: HallucinationType[] = [];
+
+    const hypeCount = this.hypePatterns.reduce((sum, p) => sum + (text.match(p) || []).length, 0);
+    const evidenceCount = this.evidencePatterns.reduce((sum, p) => sum + (text.match(p) || []).length, 0);
+
+    if (hypeCount > 0 && evidenceCount === 0) {
+      issues.push(`Niepoparte superlatywy/gwarancje: ${hypeCount}`);
+      htypes.push(HallucinationType.OVERCONFIDENT);
+      suggestions.push("Dodaj dowód (dane, recenzje, konkretne wyniki) lub złagodź język");
+    }
+
+    const score = Math.max(20, 95 - hypeCount * 18 + evidenceCount * 12);
+    const passed = hypeCount === 0 || evidenceCount > 0 || score >= 65;
+    const severity = hypeCount >= 2 && evidenceCount === 0 ? Severity.HIGH : hypeCount >= 1 ? Severity.MEDIUM : Severity.LOW;
+
+    return this.createResult(passed, score, 0.7, issues, suggestions, htypes, severity, {
+      hype: hypeCount,
+      evidence: evidenceCount,
+    });
+  }
+}
+
 // ORCHESTRATOR
 export class FiltrTonoyana {
   private filters = [
@@ -612,6 +681,7 @@ export class FiltrTonoyana {
     new DwuperspektywaFilter(),
     new BacktrackFilter(),
     new AtrybucjaFilter(),
+    new HypeFilter(), // NEW: rozszerzenie dla treści marketingowych FB
   ];
 
   analyze(text: string): AnalysisReport {
@@ -622,8 +692,25 @@ export class FiltrTonoyana {
     const avgScore = Math.floor(results.reduce((sum, r) => sum + r.score, 0) / results.length);
     const passed = blockedBy.length === 0;
 
-    const decision =
-      passed ? Decision.PASS : avgScore >= 50 ? Decision.WARN : Decision.BLOCK;
+    // Count high severity signals for stricter overall decision (even if individual filters "passed")
+    const highSeverityCount = results.filter(r => r.severity === Severity.HIGH).length;
+    const mediumSeverityCount = results.filter(r => r.severity === Severity.MEDIUM).length;
+    const totalIssues = allIssues.length;
+
+    let decision: Decision;
+    if (passed) {
+      if (highSeverityCount >= 2 || totalIssues >= 4) {
+        decision = Decision.WARN;
+      } else if (highSeverityCount >= 1) {
+        decision = Decision.WARN; // any hard red flag → at least WARN for review
+      } else if (avgScore < 78 || mediumSeverityCount >= 2) {
+        decision = Decision.WARN;
+      } else {
+        decision = Decision.PASS;
+      }
+    } else {
+      decision = avgScore >= 55 && highSeverityCount === 0 ? Decision.WARN : Decision.BLOCK;
+    }
 
     return {
       text: text.substring(0, 200),

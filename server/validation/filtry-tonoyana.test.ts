@@ -118,6 +118,23 @@ describe("Filtry Tonoyana", () => {
     });
   });
 
+  describe("Hype Filter (F8 - new extension for marketing posts)", () => {
+    it("should flag unsupported superlatives without evidence", () => {
+      const text = "This is the best revolutionary solution ever. 100% guaranteed results. Game changer!";
+      const report = filtry.analyze(text);
+      const hype = report.results.find((r) => r.filterName === "Hype");
+      expect(hype?.issues.length).toBeGreaterThan(0);
+      expect(hype?.score).toBeLessThan(70);
+    });
+
+    it("should accept hype when backed by evidence", () => {
+      const text = "This is the best solution according to our 2025 case study with 500 users reporting 40% faster results.";
+      const report = filtry.analyze(text);
+      const hype = report.results.find((r) => r.filterName === "Hype");
+      expect(hype?.score).toBeGreaterThan(65);
+    });
+  });
+
   describe("Atrybucja Filter (F7)", () => {
     it("should detect attribution errors", () => {
       const text = "He failed because he's lazy. She succeeded because she's smart.";
@@ -161,7 +178,7 @@ describe("Filtry Tonoyana", () => {
       const text = "All people always need this. It's obvious.";
       const report = filtry.analyze(text);
       const summary = report.summary();
-      expect(summary).toContain("PASS" || "WARN" || "BLOCK");
+      expect(summary).toMatch(/PASS|WARN|BLOCK/);
       expect(summary).toContain("score");
     });
   });
