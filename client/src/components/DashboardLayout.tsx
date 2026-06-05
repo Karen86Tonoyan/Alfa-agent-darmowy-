@@ -29,7 +29,17 @@ import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Users, label: "Connect Pages", path: "/pages/connect" },
+  { icon: Users, label: "Groups & Filters", path: "/groups" },
+  { icon: Users, label: "Post Scheduler", path: "/post-scheduler" },
+  { icon: Users, label: "Messages", path: "/messages" },
+  { icon: Users, label: "Tones", path: "/tones" },
+  { icon: Users, label: "Skills", path: "/skills" },
+  { icon: Users, label: "Knowledge Base", path: "/knowledge" },
+  { icon: Users, label: "Filters", path: "/filters" },
+  { icon: Users, label: "AI Generator", path: "/ai-generator" },
   { icon: Users, label: "ALFA Lab", path: "/alfa-lab" },
+  { icon: Users, label: "History", path: "/post-history" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";

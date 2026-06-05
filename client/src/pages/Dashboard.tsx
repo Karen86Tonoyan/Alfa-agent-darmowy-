@@ -8,13 +8,15 @@ export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
 
+  const { data: pages, isLoading: pagesLoading } = trpc.pages.list.useQuery();
+
   useEffect(() => {
     if (!authLoading && !user) {
       setLocation("/");
     }
   }, [user, authLoading, setLocation]);
 
-  if (authLoading) {
+  if (authLoading || pagesLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="animate-spin text-foreground" size={48} />
@@ -40,23 +42,30 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="container py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Page Status Card */}
+          {/* Connected Pages Card */}
           <div className="card-industrial">
-            <h2 className="text-3xl font-black tracking-tighter mb-6">PAGE STATUS</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center border-b border-border pb-4">
-                <span className="text-muted-foreground">Connected Pages</span>
-                <span className="text-2xl font-black">0</span>
+            <h2 className="text-3xl font-black tracking-tighter mb-6">CONNECTED PAGES</h2>
+            {pages && pages.length > 0 ? (
+              <div className="space-y-3">
+                {pages.slice(0, 3).map((page: any) => (
+                  <div key={page.id} className="flex justify-between items-center border-b border-border pb-3 last:border-0 last:pb-0">
+                    <div>
+                      <div className="font-bold">{page.pageName}</div>
+                      <div className="text-xs text-muted-foreground">ID: {page.pageId}</div>
+                    </div>
+                    <a href={`/groups?pid=${page.id}`} className="text-sm underline">Manage</a>
+                  </div>
+                ))}
+                {pages.length > 3 && (
+                  <div className="text-xs text-muted-foreground pt-2">+{pages.length - 3} more pages</div>
+                )}
               </div>
-              <div className="flex justify-between items-center border-b border-border pb-4">
-                <span className="text-muted-foreground">Active Groups</span>
-                <span className="text-2xl font-black">0</span>
+            ) : (
+              <div>
+                <p className="text-muted-foreground mb-4">No pages connected yet.</p>
+                <a href="/pages/connect" className="btn-industrial text-sm inline-block">CONNECT FIRST PAGE</a>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Messages Today</span>
-                <span className="text-2xl font-black">0</span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Quick Actions Card */}
@@ -66,31 +75,31 @@ export default function Dashboard() {
               <a href="/pages/connect" className="w-full btn-industrial text-sm inline-block text-center">
                 CONNECT PAGE
               </a>
-              <button className="w-full btn-industrial text-sm">
-                ADD GROUP
-              </button>
               <a href="/ai-generator" className="w-full btn-industrial text-sm inline-block text-center">
-                AI POST GENERATOR
+                AI POST GENERATOR (ALFA)
+              </a>
+              <a href="/alfa-lab" className="w-full btn-industrial text-sm inline-block text-center">
+                ALFA LAB — TEST GUARDRAILS
+              </a>
+              <a href="/post-scheduler" className="w-full btn-industrial text-sm inline-block text-center">
+                SCHEDULE POSTS
               </a>
             </div>
           </div>
 
-          {/* System Status Card */}
+          {/* Platform Modules Card */}
           <div className="card-industrial">
-            <h2 className="text-3xl font-black tracking-tighter mb-6">SYSTEM STATUS</h2>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-accent"></div>
-                <span className="text-muted-foreground">API Connected</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-accent"></div>
-                <span className="text-muted-foreground">Database Ready</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-accent"></div>
-                <span className="text-muted-foreground">Scheduler Active</span>
-              </div>
+            <h2 className="text-3xl font-black tracking-tighter mb-6">PLATFORM MODULES</h2>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <a href="/groups" className="underline">Groups & Filters</a>
+              <a href="/tones" className="underline">Tones</a>
+              <a href="/skills" className="underline">Agent Skills</a>
+              <a href="/knowledge" className="underline">Knowledge Base</a>
+              <a href="/messages" className="underline">Messages</a>
+              <a href="/post-history" className="underline">History & Analytics</a>
+            </div>
+            <div className="mt-6 text-xs text-muted-foreground">
+              Full brutalist FB management + AI under ALFA guardrails.
             </div>
           </div>
         </div>
