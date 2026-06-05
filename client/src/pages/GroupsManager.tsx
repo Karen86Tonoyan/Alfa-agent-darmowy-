@@ -26,6 +26,7 @@ export default function GroupsManager({ pageId }: GroupsManagerProps) {
   const createMutation = trpc.groups.create.useMutation();
   const updateMutation = trpc.groups.update.useMutation();
   const deleteMutation = trpc.groups.delete.useMutation();
+  const testBrowserMutation = trpc.scheduledPosts.testBrowserPostToGroup.useMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,6 +234,30 @@ export default function GroupsManager({ pageId }: GroupsManagerProps) {
                     title="Delete group"
                   >
                     <Trash2 size={20} className="text-accent" />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const testText = "Test post from ALFA agent browser automation — " + new Date().toISOString();
+                      try {
+                        const res = await testBrowserMutation.mutateAsync({
+                          pageId,
+                          groupId: group.id,
+                          content: testText,
+                        });
+                        if (res.success) {
+                          toast.success("Browser post succeeded! " + (res.postUrl || ""));
+                        } else {
+                          toast.error("Browser test failed: " + (res.error || res.message));
+                        }
+                      } catch (e: any) {
+                        toast.error("Test failed: " + e.message);
+                      }
+                    }}
+                    className="p-3 hover:bg-muted transition-colors"
+                    title="Test browser posting to this group (first time: log in manually in the opened browser)"
+                    disabled={testBrowserMutation.isPending}
+                  >
+                    🌐
                   </button>
                 </div>
               </div>
