@@ -1,67 +1,31 @@
 #!/usr/bin/env tsx
 /**
- * Standalone ALFA / Filtry Tonoyana validator
- * Usage:
- *   npx tsx scripts/alfa-validate.ts "your text here"
- *   pnpm alfa:check -- "post content to validate before publishing"
- *
- * Exit codes:
- *   0 = PASS (safe to publish)
- *   1 = WARN (review recommended)
- *   2 = BLOCK (do not publish, fix issues)
- *
- * This makes the core ALFA logic usable outside the full Facebook agent ("darmowy" / reusable).
+ * Legacy thin wrapper — use `pnpm alfa check "text"` or `pnpm alfa pipeline ...` for the full kozacki experience.
+ * Kept for backward compatibility.
  */
+import { alfa } from "../server/validation/alfa-pipeline";
 
-import { FiltrTonoyana, Decision } from "../server/validation/filtry-tonoyana.ts";
-
-const filtry = new FiltrTonoyana();
-
-function main() {
+/**
+ * Legacy thin wrapper now powered by the full kozacki AlfaPipeline.
+ * Kept for backward compatibility with existing calls.
+ */
+async function main() {
   const text = process.argv.slice(2).join(" ").trim();
 
   if (!text) {
-    console.error("Usage: pnpm alfa:check -- \"the text to validate with Filtry Tonoyana / ALFA\"");
-    console.error("Example: pnpm alfa:check -- \"According to our 2024 study, this works for 87% of users in similar conditions.\"");
+    console.error("Usage: pnpm alfa:check -- \"text\"   (recommended: pnpm alfa pipeline --depth full ...)");
     process.exit(1);
   }
 
-  const report = filtry.analyze(text);
+  const report = await alfa.analyze(text, { depth: "MEDIUM" });
 
-  console.log("\n=== ALFA / Filtry Tonoyana Validation ===\n");
-  console.log(report.summary());
-  console.log("\n--- Details ---");
+  console.log("\n=== ALFA (kozacki) ===\n");
+  console.log(`Decision: ${report.finalDecision} | score ${report.overallScore}/100`);
+  console.log(report.baseAnalysis.summary());
 
-  for (const r of report.results) {
-    const icon = r.passed ? "✓" : "✗";
-    console.log(`${icon} ${r.filterName.padEnd(16)} score=${String(r.score).padStart(3)}  ${r.severity.padEnd(6)}  issues=${r.issues.length}`);
-    if (r.issues.length) {
-      r.issues.forEach(i => console.log(`    - ${i}`));
-    }
-    if (r.suggestions.length) {
-      console.log(`    suggestions: ${r.suggestions.join("; ")}`);
-    }
-  }
+  console.log("\n(For the full experience with detectors, trajectory & HTML: pnpm alfa pipeline --html report.html \"text\")");
 
-  console.log("\n--- Summary ---");
-  console.log(`Overall: ${report.decision} (score ${report.overallScore}/100)`);
-  if (report.issues.length) {
-    console.log("Issues:", report.issues.join(" | "));
-  }
-  if (report.suggestions.length) {
-    console.log("Suggestions:", report.suggestions.slice(0, 3).join(" | "));
-  }
-
-  console.log("\n(Seeded knowledge graph examples available via alfa-knowledge MCP for cross-agent learning.)\n");
-
-  // Exit codes for CI / scripting
-  if (report.decision === Decision.BLOCK) {
-    process.exit(2);
-  } else if (report.decision === Decision.WARN) {
-    process.exit(1);
-  } else {
-    process.exit(0);
-  }
+  process.exit(report.finalDecision === "BLOCK" ? 2 : report.finalDecision === "WARN" ? 1 : 0);
 }
 
 main();

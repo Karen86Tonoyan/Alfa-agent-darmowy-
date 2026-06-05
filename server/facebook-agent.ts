@@ -3,7 +3,7 @@ import type { Express, Request, Response } from "express";
 import { ENV } from "./_core/env";
 import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";
-import { FiltrTonoyana, Decision } from "./validation/filtry-tonoyana";
+import { alfa } from "./validation/alfa-pipeline"; // upgraded to full kozacki pipeline
 import {
   getFacebookPageByGraphId,
   getFacebookPageById,
@@ -18,8 +18,6 @@ import {
 } from "./db-groups-posts";
 import { getDefaultToneByPage } from "./db-tones";
 import { publishPagePost, sendPageMessage } from "./facebook";
-
-const filtry = new FiltrTonoyana();
 
 function getRawBody(req: Request) {
   if (typeof req.body === "string") return req.body;
@@ -85,22 +83,27 @@ async function generateAndSendReply(params: {
   });
 
   const candidate = String(llmResult.choices[0]?.message?.content ?? "").trim();
-  const validation = filtry.analyze(candidate);
+
+  // KOZACKI full ALFA pipeline for live customer messages (high pressure)
+  const pipeline = await alfa.analyze(candidate, {
+    depth: "FULL",
+    context: `Replying to customer message: ${params.messageText}`,
+  });
 
   const reply = await createAIReply({
     pageId: params.pageId,
     incomingMessageId: params.messageDbId,
     toneConfigId: tone?.id,
     replyContent: candidate,
-    status: validation.decision === Decision.BLOCK ? "rejected" : "generated",
-    errorMessage: validation.decision === Decision.BLOCK ? validation.summary() : null,
+    status: pipeline.finalDecision === "BLOCK" ? "rejected" : "generated",
+    errorMessage: pipeline.finalDecision === "BLOCK" ? pipeline.baseAnalysis.summary() : null,
   });
 
-  if (validation.decision === Decision.BLOCK) {
+  if (pipeline.finalDecision === "BLOCK") {
     await maybeNotify(
       params.pageId,
-      "AI reply blocked",
-      `Reply for incoming message ${params.messageDbId} was blocked by ALFA validation.`,
+      "AI reply blocked by ALFA",
+      `Message ${params.messageDbId} blocked. Score ${pipeline.overallScore}. ${pipeline.blockedBy.join(", ")}`,
       "notifyOnAIReply"
     );
     return;

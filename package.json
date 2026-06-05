@@ -11,8 +11,10 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
-    "alfa:check": "tsx scripts/alfa-validate.ts",
-    "alfa:validate": "tsx scripts/alfa-validate.ts"
+    "alfa": "tsx scripts/alfa.ts",
+    "alfa:check": "tsx scripts/alfa.ts check",
+    "alfa:pipeline": "tsx scripts/alfa.ts pipeline",
+    "alfa:report": "tsx scripts/alfa.ts report"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",

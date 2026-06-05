@@ -7,10 +7,8 @@ import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { invokeLLM } from "./_core/llm";
-import { FiltrTonoyana, Decision } from "./validation/filtry-tonoyana";
+import { alfa } from "./validation/alfa-pipeline"; // KOZACKI full pipeline (was simple FiltrTonoyana)
 import { getFacebookPageById } from "./db";
-
-const filtry = new FiltrTonoyana();
 
 export const aiGenerationRouter = router({
   /**
@@ -71,22 +69,32 @@ Guidelines:
           .join("");
       }
 
-      // Validate with Filtry Tonoyana
-      const validation = filtry.analyze(generatedContent);
+      // KOZACKI ALFA Pipeline — full detectors + dynamic depth + beautiful report
+      const pipelineReport = await alfa.analyze(generatedContent, {
+        depth: "HEAVY",
+        context: `Location: ${input.location}. Topic: ${input.topic || "general"}. Tone: ${input.tone || "professional"}`,
+      });
 
       return {
         content: generatedContent,
         validation: {
-          passed: validation.passed,
-          decision: validation.decision,
-          overallScore: validation.overallScore,
-          issues: validation.issues,
-          suggestions: validation.suggestions,
-          blockedBy: validation.blockedBy,
-          summary: validation.summary(),
+          passed: pipelineReport.finalDecision === "PASS",
+          decision: pipelineReport.finalDecision,
+          overallScore: pipelineReport.overallScore,
+          issues: pipelineReport.baseAnalysis.issues,
+          suggestions: pipelineReport.baseAnalysis.suggestions,
+          blockedBy: pipelineReport.blockedBy,
+          depth: pipelineReport.depth,
+          risk: pipelineReport.risk,
+          pressure: pipelineReport.pressure,
+          summary: pipelineReport.baseAnalysis.summary(),
         },
-        canPublish: validation.decision === Decision.PASS,
-        requiresReview: validation.decision === Decision.WARN,
+        canPublish: pipelineReport.finalDecision === "PASS",
+        requiresReview: pipelineReport.finalDecision === "WARN",
+        fullAlfaReport: {
+          proofChain: pipelineReport.proofChain,
+          trajectory: pipelineReport.trajectoryMermaid,
+        },
       };
     }),
 
@@ -106,16 +114,20 @@ Guidelines:
         throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" });
       }
 
-      const validation = filtry.analyze(input.content);
+      // Use the full kozacki pipeline for rich feedback in the UI
+      const report = await alfa.analyze(input.content, { depth: "HEAVY" });
 
       return {
-        passed: validation.passed,
-        decision: validation.decision,
-        overallScore: validation.overallScore,
-        issues: validation.issues,
-        suggestions: validation.suggestions,
-        blockedBy: validation.blockedBy,
-        results: validation.results.map((r) => ({
+        passed: report.finalDecision === "PASS",
+        decision: report.finalDecision,
+        overallScore: report.overallScore,
+        issues: report.baseAnalysis.issues,
+        suggestions: report.baseAnalysis.suggestions,
+        blockedBy: report.blockedBy,
+        depth: report.depth,
+        risk: report.risk,
+        pressure: report.pressure,
+        results: report.baseAnalysis.results.map((r) => ({
           filterName: r.filterName,
           passed: r.passed,
           score: r.score,
@@ -123,7 +135,8 @@ Guidelines:
           suggestions: r.suggestions,
           severity: r.severity,
         })),
-        summary: validation.summary(),
+        summary: report.baseAnalysis.summary(),
+        proofChain: report.proofChain,
       };
     }),
 });
