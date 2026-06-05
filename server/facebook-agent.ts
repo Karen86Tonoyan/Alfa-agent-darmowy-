@@ -15,9 +15,11 @@ import {
   getScheduledPostsForPublishing,
   updateAIReply,
   updateScheduledPost,
+  getGroupById,
 } from "./db-groups-posts";
 import { getDefaultToneByPage } from "./db-tones";
 import { publishPagePost, sendPageMessage } from "./facebook";
+import { postToGroupViaBrowser, isValidGroupUrl } from "./group-browser-poster";
 
 function getRawBody(req: Request) {
   if (typeof req.body === "string") return req.body;
@@ -217,21 +219,54 @@ export async function runScheduledPostPublisher() {
       }
 
       const mediaUrl = post.mediaUrls?.split(",").map((item) => item.trim()).filter(Boolean)[0];
-      const result = await publishPagePost(page.pageAccessToken, post.content, mediaUrl);
+      const mediaLocalPath = mediaUrl; // In real setup you'd download from S3 first to a temp file
+
+      // 1. Always try to post to the Page feed via Graph API (reliable)
+      let pagePostResult: any = null;
+      try {
+        pagePostResult = await publishPagePost(page.pageAccessToken, post.content, mediaUrl);
+      } catch (e) {
+        console.error("Page post failed:", e);
+      }
+
+      // 2. Post to groups via browser (the missing piece - Groups API is dead)
+      const groupIds = post.groupIds ? post.groupIds.split(",").map((s: string) => s.trim()).filter(Boolean) : [];
+      let groupSuccess = 0;
+      let groupErrors: string[] = [];
+
+      if (groupIds.length > 0) {
+        const groups = await Promise.all(groupIds.map((gid: string) => getGroupById(Number(gid)).catch(() => null)));
+        for (const grp of groups) {
+          if (!grp || !grp.groupUrl || !isValidGroupUrl(grp.groupUrl)) continue;
+          const res = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPath);
+          if (res.success) {
+            groupSuccess++;
+          } else {
+            groupErrors.push(`Group ${grp.groupName || grp.groupUrl}: ${res.error}`);
+          }
+        }
+      }
+
+      const finalStatus = groupIds.length === 0 || groupSuccess > 0 ? "published" : "failed";
+      const fbId = pagePostResult?.post_id || pagePostResult?.id;
 
       await updateScheduledPost(post.id, {
-        status: "published",
+        status: finalStatus,
         publishedAt: new Date(),
-        facebookPostId: result.post_id || result.id,
-        errorMessage: null,
+        facebookPostId: fbId,
+        errorMessage: groupErrors.length ? groupErrors.join(" | ") : null,
       });
 
       await maybeNotify(
         page.id,
         "Scheduled post published",
-        `Scheduled post ${post.id} was published successfully.`,
+        `Scheduled post ${post.id} published to page${groupSuccess ? ` + ${groupSuccess} groups` : ""}.`,
         "notifyOnPostPublished"
       );
+
+      if (groupErrors.length) {
+        await maybeNotify(page.id, "Some group posts failed", groupErrors.join("\n"), "notifyOnPostFailed");
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown scheduler error";
       await updateScheduledPost(post.id, {

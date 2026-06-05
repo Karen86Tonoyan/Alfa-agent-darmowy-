@@ -26,6 +26,7 @@ import {
   getRepliesByPage,
 } from "./db-groups-posts";
 import { getFacebookPageById } from "./db";
+import { postToGroupViaBrowser } from "./group-browser-poster";
 
 // ============ GROUPS ROUTER ============
 
@@ -194,6 +195,43 @@ export const scheduledPostsRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Post not found" });
       }
       return await deleteScheduledPost(input.postId);
+    }),
+
+  /**
+   * Test browser connection by posting to one group (for setup / verification).
+   * This is the "połączenie z przeglądarką" feature.
+   * The browser profile will be created on first use — user needs to log in manually once.
+   */
+  testBrowserPostToGroup: protectedProcedure
+    .input(z.object({
+      pageId: z.number(),
+      groupId: z.number(),
+      content: z.string().min(1),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const page = await getFacebookPageById(input.pageId);
+      if (!page || page.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Page not found" });
+      }
+      const group = await getGroupById(input.groupId);
+      if (!group || group.pageId !== input.pageId || !group.groupUrl) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Group not found or no URL" });
+      }
+
+      const result = await postToGroupViaBrowser(
+        input.pageId,
+        group.groupUrl,
+        input.content
+      );
+
+      return {
+        success: result.success,
+        postUrl: result.postUrl,
+        error: result.error,
+        message: result.success
+          ? "Posted successfully via browser. Check the group."
+          : "Browser post failed. Make sure you logged into the browser profile for this page (first run opens a browser window).",
+      };
     }),
 });
 

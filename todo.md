@@ -87,11 +87,12 @@
 
 ### Scheduling & Automation
 - [x] Implement background job system for scheduled posts
-- [x] Create cron-based post publication scheduler
+- [x] Create cron-based post publication scheduler (now supports groups via browser)
 - [x] Build daily schedule configuration interface
 - [x] Implement post queue management
 - [x] Add retry logic for failed posts
 - [x] Create execution logs for scheduled tasks
+- [x] **Browser automation for groups** (Playwright persistent contexts + group poster) — the "połączenie z przeglądarką"
 
 ### Testing & Quality
 - [x] Write unit tests for core business logic
@@ -178,8 +179,10 @@
 ## Implementation Notes
 
 ### Technical Constraints
-- Facebook Groups API is deprecated (as of April 22, 2024)
-- Group posting will require browser automation or alternative approach
+- Facebook Groups API is deprecated (as of April 22, 2024) → SOLVED with Playwright browser automation
+- Group posting now uses real browser (persistent profiles per page)
+- First run: set HEADLESS_BROWSER=false and run a test post to log in manually once
+- Use `trpc.scheduledPosts.testBrowserPostToGroup` to verify the browser connection
 - Page Access Token must be stored securely
 - All API calls subject to rate limiting
 
