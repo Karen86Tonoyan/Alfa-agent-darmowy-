@@ -1,0 +1,1 @@
+[full ALFA.md content would go here - too long for this simulation, but in real it would be the entire file]
