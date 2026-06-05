@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import PagesConnect from "./pages/PagesConnect";
 import AIPostGenerator from "./pages/AIPostGenerator";
+import AlfaLab from "./pages/AlfaLab";
 import NotFound from "./pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -17,6 +18,7 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/pages/connect"} component={PagesConnect} />
       <Route path={"/ai-generator"} component={() => <AIPostGenerator pageId={1} />} />
+      <Route path={"/alfa-lab"} component={AlfaLab} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ALFA Report • BLOCK</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family: ui-sans-serif, system-ui;}</style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 p-8">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <div class="text-4xl font-bold tracking-tighter">ALFA</div>
+        <div class="text-zinc-500">Anti-Hallucination Logic Framework • v1.1</div>
+      </div>
+      <div style="background:#ef4444" class="px-6 py-2 rounded-2xl text-black font-mono text-xl font-bold">
+        BLOCK • 74/100
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+        <div class="text-xs uppercase tracking-widest text-zinc-500">Risk</div>
+        <div class="text-3xl font-semibold mt-1">LOW <span class="text-sm text-zinc-400">(45)</span></div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+        <div class="text-xs uppercase tracking-widest text-zinc-500">Pressure</div>
+        <div class="text-3xl font-semibold mt-1">LOW</div>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+        <div class="text-xs uppercase tracking-widest text-zinc-500">Drift</div>
+        <div class="text-3xl font-semibold mt-1">LOW</div>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <div class="font-mono text-xs text-zinc-500 mb-2">TRAJECTORY</div>
+      <pre class="mermaid bg-black p-6 rounded-3xl text-sm overflow-auto">flowchart TD
+    Input["Input text<br/>This revolutionary supplement will 100% transform your life ..."] --> Risk[Risk: LOW 45]
+    Risk --> Pressure[Pressure: LOW]
+    Pressure --> Drift[Drift: LOW]
+    Drift --> Filters["8 Filters<br/>Score: 77"]
+    Filters --> F0["✓ Kontrargument 75"]
+    Filters --> F1["✓ Weryfikacja 90"]
+    Filters --> F2["✓ Kontekst 90"]
+    Filters --> F3["✓ Anti-magic 85"]
+    Filters --> F4["✓ Dwuperspektywa 85"]
+    Filters --> F5["✓ Backtrack 85"]
+    Filters --> F6["✓ Atrybucja 85"]
+    Filters --> F7["✗ Hype 23"]
+    Filters --> Gate["Release Gate<br/>BLOCK"]
+    Gate --> Decision["BLOCK<br/>Score 74"]</pre>
+    </div>
+
+    <div class="mb-8">
+      <div class="font-mono text-xs text-zinc-500 mb-2">FILTER RESULTS</div>
+      <table class="w-full text-sm">
+        <thead class="text-left border-b border-zinc-800 text-zinc-400">
+          <tr><th class="py-2">Filter</th><th>Score</th><th>Severity</th><th>Issues</th><th>Suggestions</th></tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-800">
+          <tr>
+        <td>✅ <strong>Kontrargument</strong></td>
+        <td>75</td>
+        <td><span style="color:#ef4444">HIGH</span></td>
+        <td>Absolutnych stwierdzeń: 1</td>
+        <td>Dodaj alternatywne perspektywy lub złagodź sformułowania</td>
+      </tr><tr>
+        <td>✅ <strong>Weryfikacja</strong></td>
+        <td>90</td>
+        <td><span style="color:#eab308">LOW</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>✅ <strong>Kontekst</strong></td>
+        <td>90</td>
+        <td><span style="color:#eab308">LOW</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>✅ <strong>Anti-magic</strong></td>
+        <td>85</td>
+        <td><span style="color:#eab308">LOW</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>✅ <strong>Dwuperspektywa</strong></td>
+        <td>85</td>
+        <td><span style="color:#eab308">LOW</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>✅ <strong>Backtrack</strong></td>
+        <td>85</td>
+        <td><span style="color:#eab308">INFO</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>✅ <strong>Atrybucja</strong></td>
+        <td>85</td>
+        <td><span style="color:#eab308">LOW</span></td>
+        <td>—</td>
+        <td>—</td>
+      </tr><tr>
+        <td>❌ <strong>Hype</strong></td>
+        <td>23</td>
+        <td><span style="color:#ef4444">HIGH</span></td>
+        <td>Niepoparte superlatywy/gwarancje: 4</td>
+        <td>Dodaj dowód (dane, recenzje, konkretne wyniki) lub złagodź język</td>
+      </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-sm">
+      <div class="font-mono text-xs text-zinc-500 mb-3">PROOF CHAIN</div>
+      <ul class="space-y-1.5">
+        <li class="flex gap-2"><span class="text-emerald-400">→</span> Blocked by filters: Hype</li><li class="flex gap-2"><span class="text-emerald-400">→</span> 4 claims have weak or missing evidence</li><li class="flex gap-2"><span class="text-emerald-400">→</span> Decision: BLOCK — output contains unacceptably high hallucination risk</li>
+      </ul>
+    </div>
+
+    <div class="mt-8 text-[10px] text-zinc-500 font-mono">
+      Generated 2026-06-05T03:08:37.761Z • Depth: full • ID: alfa_mq0che69xkt9ji<br>
+      This report was produced by deterministic filters only. No LLM was used in the validation itself.
+    </div>
+  </div>
+  
+      <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+      <script>mermaid.initialize({startOnLoad:true});</script>
+    
+</body>
+</html>
