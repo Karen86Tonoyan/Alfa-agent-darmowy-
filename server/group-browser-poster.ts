@@ -17,9 +17,21 @@
  *   await postToGroupViaBrowser(group.groupUrl, content, mediaLocalPath?)
  */
 
-import { chromium, BrowserContext, Page } from "playwright";
-import path from "path";
-import fs from "fs";
+// Lazy import for Playwright so the whole app doesn't crash if the user hasn't run `pnpm browser:setup` yet.
+let playwright: any = null;
+async function getPlaywright() {
+  if (!playwright) {
+    try {
+      playwright = await import("playwright");
+    } catch (e) {
+      throw new Error(
+        "Playwright not installed. Run: pnpm browser:setup (then npx playwright install --with-deps on first setup). " +
+        "This is required for group posting because Facebook Groups API is deprecated."
+      );
+    }
+  }
+  return playwright;
+}
 
 const PROFILES_DIR = path.join(process.cwd(), "storage", "browser-profiles");
 
@@ -49,6 +61,7 @@ async function getBrowserContext(pageId: number): Promise<BrowserContext> {
   const userDataDir = path.join(PROFILES_DIR, `page-${pageId}`);
   fs.mkdirSync(userDataDir, { recursive: true });
 
+  const { chromium } = await getPlaywright();
   const context = await chromium.launchPersistentContext(userDataDir, {
     headless: process.env.HEADLESS_BROWSER !== "false", // set HEADLESS_BROWSER=false for first login
     viewport: { width: 1280, height: 800 },

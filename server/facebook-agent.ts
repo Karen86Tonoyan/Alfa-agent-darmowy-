@@ -20,6 +20,10 @@ import {
 import { getDefaultToneByPage } from "./db-tones";
 import { publishPagePost, sendPageMessage } from "./facebook";
 import { postToGroupViaBrowser, isValidGroupUrl } from "./group-browser-poster";
+import axios from "axios";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 function getRawBody(req: Request) {
   if (typeof req.body === "string") return req.body;
@@ -204,6 +208,26 @@ export function registerFacebookWebhookRoutes(app: Express) {
   });
 }
 
+async function downloadMediaForBrowser(mediaUrl?: string): Promise<string | undefined> {
+  if (!mediaUrl) return undefined;
+  if (!mediaUrl.startsWith("http")) return mediaUrl; // already local?
+
+  try {
+    const tempDir = path.join(os.tmpdir(), "alfa-browser-media");
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+    const ext = path.extname(new URL(mediaUrl).pathname) || ".jpg";
+    const localPath = path.join(tempDir, `media-${Date.now()}${ext}`);
+
+    const response = await axios.get(mediaUrl, { responseType: "arraybuffer", timeout: 30000 });
+    fs.writeFileSync(localPath, response.data);
+    return localPath;
+  } catch (e) {
+    console.error("Failed to download media for browser post:", e);
+    return undefined;
+  }
+}
+
 export async function runScheduledPostPublisher() {
   const duePosts = await getScheduledPostsForPublishing();
 
@@ -219,7 +243,7 @@ export async function runScheduledPostPublisher() {
       }
 
       const mediaUrl = post.mediaUrls?.split(",").map((item) => item.trim()).filter(Boolean)[0];
-      const mediaLocalPath = mediaUrl; // In real setup you'd download from S3 first to a temp file
+      const mediaLocalPathForBrowser = await downloadMediaForBrowser(mediaUrl);
 
       // 1. Always try to post to the Page feed via Graph API (reliable)
       let pagePostResult: any = null;
@@ -238,7 +262,7 @@ export async function runScheduledPostPublisher() {
         const groups = await Promise.all(groupIds.map((gid: string) => getGroupById(Number(gid)).catch(() => null)));
         for (const grp of groups) {
           if (!grp || !grp.groupUrl || !isValidGroupUrl(grp.groupUrl)) continue;
-          const res = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPath);
+          const res = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPathForBrowser);
           if (res.success) {
             groupSuccess++;
           } else {
