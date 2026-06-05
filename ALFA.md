@@ -1,1 +1,3 @@
-[full ALFA.md content would go here - too long for this simulation, but in real it would be the entire file]
+# ALFA
+
+TODO: Add the full ALFA manifesto content describing the deterministic pipeline principles and usage.
