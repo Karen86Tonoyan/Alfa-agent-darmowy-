@@ -20,6 +20,7 @@ import {
 import { getDefaultToneByPage } from "./db-tones";
 import { publishPagePost, sendPageMessage } from "./facebook";
 import { postToGroupViaBrowser, isValidGroupUrl } from "./group-browser-poster";
+import { postToFacebookGroupViaOperator } from "./browser-operator-client";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
@@ -262,11 +263,34 @@ export async function runScheduledPostPublisher() {
         const groups = await Promise.all(groupIds.map((gid: string) => getGroupById(Number(gid)).catch(() => null)));
         for (const grp of groups) {
           if (!grp || !grp.groupUrl || !isValidGroupUrl(grp.groupUrl)) continue;
-          const res = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPathForBrowser);
+
+          // Prefer the advanced BrowserOperator agent (the one from https://github.com/BrowserOperator/browser-operator-core)
+          // because it uses multi-agent reasoning + vision + CDP for complex sites like Facebook.
+          // Falls back to raw Playwright if operator is not configured or fails.
+          let res: { success: boolean; error?: string; postUrl?: string };
+          try {
+            const opRes = await postToFacebookGroupViaOperator({
+              groupUrl: grp.groupUrl,
+              content: post.content,
+              mediaUrl: mediaLocalPathForBrowser || mediaUrl,
+              // modelConfig can be passed from env or per-page settings in a real setup
+            });
+            res = opRes;
+            if (!opRes.success && process.env.BROWSER_OPERATOR_API_URL) {
+              // If operator was configured but failed, still try raw Playwright as fallback
+              const pwRes = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPathForBrowser);
+              if (pwRes.success) res = { success: true, postUrl: pwRes.postUrl };
+            }
+          } catch (opErr) {
+            // Operator not available or errored — fall back to direct Playwright
+            const pwRes = await postToGroupViaBrowser(page.id, grp.groupUrl, post.content, mediaLocalPathForBrowser);
+            res = pwRes;
+          }
+
           if (res.success) {
             groupSuccess++;
           } else {
-            groupErrors.push(`Group ${grp.groupName || grp.groupUrl}: ${res.error}`);
+            groupErrors.push(`Group ${grp.groupName || grp.groupUrl}: ${res.error || "unknown error"}`);
           }
         }
       }

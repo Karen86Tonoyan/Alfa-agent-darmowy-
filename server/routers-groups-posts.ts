@@ -218,20 +218,38 @@ export const scheduledPostsRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Group not found or no URL" });
       }
 
-      const result = await postToGroupViaBrowser(
-        input.pageId,
-        group.groupUrl,
-        input.content
-      );
+      // Prefer the BrowserOperator agent (https://github.com/BrowserOperator/browser-operator-core)
+      // for intelligent, resilient posting. Falls back to direct Playwright.
+      let result: { success: boolean; postUrl?: string; error?: string; message?: string };
+      try {
+        const opRes = await import("./browser-operator-client").then(m =>
+          m.postToFacebookGroupViaOperator({
+            groupUrl: group.groupUrl,
+            content: input.content,
+          })
+        );
+        result = {
+          success: opRes.success,
+          postUrl: opRes.postUrl,
+          error: opRes.error,
+          message: opRes.success
+            ? "Posted via Browser Operator agent. Check the group."
+            : "Operator attempt failed, see error.",
+        };
+      } catch {
+        // fallback
+        const pwRes = await postToGroupViaBrowser(input.pageId, group.groupUrl, input.content);
+        result = {
+          success: pwRes.success,
+          postUrl: pwRes.postUrl,
+          error: pwRes.error,
+          message: pwRes.success
+            ? "Posted successfully via direct browser automation (Playwright fallback)."
+            : "Browser post failed. For first run, make sure the browser profile is logged in (use HEADLESS_BROWSER=false).",
+        };
+      }
 
-      return {
-        success: result.success,
-        postUrl: result.postUrl,
-        error: result.error,
-        message: result.success
-          ? "Posted successfully via browser. Check the group."
-          : "Browser post failed. Make sure you logged into the browser profile for this page (first run opens a browser window).",
-      };
+      return result;
     }),
 });
 
