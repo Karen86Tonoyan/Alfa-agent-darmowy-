@@ -13,6 +13,7 @@ Zero halucynacji na publikacjach i odpowiedziach do klientów. ALFA ma zęby i o
 - **Modularne Grok Skills** — cały system rozbity na czyste, wąskie, reużywalne skille (w `~/.grok/skills/`). Możesz brać tylko `alfa-guardrails` do swojego content pipeline'u albo cały zestaw do własnego agenta.
 - Brutalist UI (czarny + biały + czerwone linie strukturalne) — zero pizdy, tylko to co działa.
 - Pełny stack: tRPC + React 19 + Drizzle + scheduler + tones + knowledge base + agent skills + group filters + media + analytics + notifications + webhooks.
+web application/stitch/projects/2074743615983339498/screens/42741226830b4f4aa537cf82fe7380e6<img width="1376" height="768" alt="image" src="https://github.com/user-attachments/assets/715ac943-e1f2-4f6f-8240-74f0a0bf0cb8" />
 
 ## Szybki start
 
